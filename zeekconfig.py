@@ -29,9 +29,9 @@ def get_network_info():
         # Append the entries to networks.cfg
         with open("/opt/zeek/etc/networks.cfg", "a") as zeek_cfg:
             for subnet, interface in subnet_interface_map.items():
-                zeek_cfg.write(f"{subnet}\t{interface}\n")
+                zeek_cfg.write(f"{subnet}/24\t{interface}\n")  # Modify the CIDR notation as needed
 
-        print("Modified subnets (ending with .0) added to networks.cfg successfully!")
+        print("Modified subnets (ending with .0) with CIDR notation added to networks.cfg successfully!")
 
     except Exception as e:
         print(f"Error adding modified subnets to networks.cfg: {e}")
