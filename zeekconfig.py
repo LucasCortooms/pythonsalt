@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 import subprocess
 import netifaces as ni
-import winreg as wr
 
 def get_connection_name_from_guid(iface_guids):
     iface_names = ['(unknown)' for _ in range(len(iface_guids))]
