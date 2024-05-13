@@ -8,24 +8,28 @@ def get_network_info():
         subnet_cmd = "ip -o -f inet addr show | awk '{print $4}'"
         subnets = subprocess.check_output(subnet_cmd, shell=True).decode().splitlines()
 
-        # Create a list of Zeek network entries
-        zeek_networks = []
+        # Create a dictionary to store subnet-interface mappings
+        subnet_interface_map = {}
+
+        # Get all available interface names
+        interface_names = ni.interfaces()
+
+        # Assign interfaces to subnets
         for subnet in subnets:
             # Remove the last octet (number) from the subnet
             subnet_without_last_octet = ".".join(subnet.split(".")[:-1])
             # Append ".0" to the modified subnet
             modified_subnet = subnet_without_last_octet + ".0"
 
-            # Get the corresponding interface name
-            interface_names = ni.interfaces()
-            interface_name = interface_names[0]  # Choose the first interface (you can modify this part)
+            # Choose an interface (you can modify this part)
+            interface_name = interface_names.pop(0) if interface_names else "default_interface"
 
-            zeek_networks.append(f"{modified_subnet}\t{interface_name}")
+            subnet_interface_map[modified_subnet] = interface_name
 
         # Append the entries to networks.cfg
         with open("/opt/zeek/etc/networks.cfg", "a") as zeek_cfg:
-            for entry in zeek_networks:
-                zeek_cfg.write(entry + "\n")
+            for subnet, interface in subnet_interface_map.items():
+                zeek_cfg.write(f"{subnet}\t{interface}\n")
 
         print("Modified subnets (ending with .0) added to networks.cfg successfully!")
 
