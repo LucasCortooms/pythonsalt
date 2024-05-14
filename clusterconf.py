@@ -1,10 +1,11 @@
 #!/usr/bin/env python3
 import os
 import subprocess
+import netifaces as ni
 
 def get_network_interfaces():
-    # Gebruik het 'ip' commando om de netwerkinterfaces te detecteren
     try:
+        # Gebruik het 'ip' commando om de netwerkinterfaces te detecteren
         output = subprocess.check_output(["ip", "link", "show"], stderr=subprocess.DEVNULL)
         interfaces = [line.split(":")[1].strip() for line in output.decode("utf-8").splitlines() if ":" in line]
         return interfaces
