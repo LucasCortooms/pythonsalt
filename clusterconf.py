@@ -8,8 +8,8 @@ def get_network_interfaces():
         # Gebruik het 'ip' commando om de netwerkinterfaces te detecteren
         output = subprocess.check_output(["ip", "link", "show"], stderr=subprocess.DEVNULL)
         interfaces = [line.split(":")[1].strip() for line in output.decode("utf-8").splitlines() if ":" in line]
-        # Filter out Docker-linked interfaces (e.g., docker0, veth*)
-        system_interfaces = [iface for iface in interfaces if not iface.startswith(("docker", "veth"))]
+        # Filter out Docker-linked interfaces en andere ongebruikelijke namen
+        system_interfaces = [iface for iface in interfaces if iface.isalnum() and not iface.startswith(("docker", "veth"))]
         return system_interfaces
     except subprocess.CalledProcessError:
         print("Kan netwerkinterfaces niet detecteren.")
