@@ -15,16 +15,25 @@ def get_network_interfaces():
         print("Kan netwerkinterfaces niet detecteren.")
         return []
 
+def has_ip_address(interface):
+    try:
+        # Gebruik het 'ip' commando om het IP-adres van de interface op te halen
+        output = subprocess.check_output(["ip", "addr", "show", interface], stderr=subprocess.DEVNULL)
+        return "inet " in output.decode("utf-8")
+    except subprocess.CalledProcessError:
+        return False
+
 def generate_worker_sections(interfaces):
     worker_sections = []
     for i, interface in enumerate(interfaces, start=1):
-        section = f"""
+        if has_ip_address(interface):
+            section = f"""
 [worker-{i}]
 type=worker
 host=localhost
 interface={interface}
 """
-        worker_sections.append(section)
+            worker_sections.append(section)
     return "\n".join(worker_sections)
 
 def update_node_cfg():
