@@ -1,30 +1,27 @@
 #!/usr/bin/env python3
-import os
 import subprocess
-import netifaces as ni
 
 def get_network_interfaces():
     try:
-        # Gebruik het 'ip' commando om de netwerkinterfaces te detecteren
+        # Use the 'ip' command to detect network interfaces
         output = subprocess.check_output(["ip", "link", "show"], stderr=subprocess.DEVNULL)
         interfaces = [line.split(":")[1].strip() for line in output.decode("utf-8").splitlines() if ":" in line]
-        # Filter out Docker-linked interfaces en andere ongebruikelijke namen
-        system_interfaces = [iface for iface in interfaces if iface.isalnum() and not iface.startswith(("docker", "veth"))]
-        return system_interfaces
+        return interfaces
     except subprocess.CalledProcessError:
-        print("Kan netwerkinterfaces niet detecteren.")
+        print("Cannot detect network interfaces.")
         return []
 
 def has_ip_address(interface):
     try:
-        # Gebruik het 'ip' commando om het IP-adres van de interface op te halen
+        # Use the 'ip' command to get the IP address of the interface
         output = subprocess.check_output(["ip", "addr", "show", interface], stderr=subprocess.DEVNULL)
         return "inet " in output.decode("utf-8")
     except subprocess.CalledProcessError:
         return False
 
-def generate_worker_sections(interfaces):
+def update_node_cfg():
     worker_sections = []
+    interfaces = get_network_interfaces()
     for i, interface in enumerate(interfaces, start=1):
         if has_ip_address(interface):
             section = f"""
@@ -34,9 +31,7 @@ host=localhost
 interface={interface}
 """
             worker_sections.append(section)
-    return "\n".join(worker_sections)
 
-def update_node_cfg():
     config = f"""
 [logger-1]
 type=logger
@@ -50,16 +45,16 @@ host=localhost
 type=proxy
 host=localhost
 
-{generate_worker_sections(get_network_interfaces())}
+{''.join(worker_sections)}
 """
 
-    # Schrijf de configuratie naar node.cfg
+    # Write the configuration to node.cfg
     try:
         with open("/opt/zeek/etc/node.cfg", "w") as cfg_file:
             cfg_file.write(config)
-        print("Configuratie is bijgewerkt in node.cfg.")
+        print("Configuration updated in node.cfg.")
     except FileNotFoundError:
-        print("Kan node.cfg niet vinden. Zorg ervoor dat het bestand bestaat en de juiste paden zijn ingesteld.")
+        print("Cannot find node.cfg. Make sure the file exists and the paths are set correctly.")
 
 if __name__ == "__main__":
     update_node_cfg()
