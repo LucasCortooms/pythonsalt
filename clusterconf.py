@@ -33,10 +33,6 @@ interface={interface}
             worker_sections.append(section)
 
     config = f"""
-[logger-1]
-type=logger
-host=localhost
-
 [manager]
 type=manager
 host=localhost
