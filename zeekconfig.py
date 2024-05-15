@@ -2,6 +2,11 @@
 import subprocess
 import netifaces as ni
 
+def clear_file(filename):
+    # Clear the contents of the specified file
+    with open(filename, "w") as f:
+        f.truncate(0)
+
 def get_network_info():
     try:
         # Get subnet information
@@ -25,6 +30,9 @@ def get_network_info():
             interface_name = interface_names.pop(0) if interface_names else "default_interface"
 
             subnet_interface_map[modified_subnet] = interface_name
+
+        # Clear the existing contents of networks.cfg
+        clear_file("/opt/zeek/etc/networks.cfg")
 
         # Append the entries to networks.cfg
         with open("/opt/zeek/etc/networks.cfg", "a") as zeek_cfg:
